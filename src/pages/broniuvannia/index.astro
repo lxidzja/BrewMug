@@ -1,0 +1,138 @@
+---
+import Base from '../../layouts/Base.astro';
+import TitleBand from '../../components/TitleBand.astro';
+import BookingForm from '../../components/BookingForm.astro';
+import { loadData } from '../../../scripts/load-data.mjs';
+import type { SiteData } from '../../lib/types';
+
+const loaded = loadData(process.cwd());
+const site = loaded.site as SiteData;
+
+const steps = [
+  { n: '1', title: 'Заповнюєте форму', text: 'Імʼя, телефон, дата, час і кількість гостей.' },
+  { n: '2', title: 'Ми перевіряємо зал', text: 'Підтверджуємо дзвінком протягом 15 хвилин.' },
+  { n: '3', title: 'Ви приходите', text: 'Столик тримаємо 20 хвилин після вказаного часу.' },
+];
+---
+
+<Base
+  title="Забронювати столик"
+  description={`Забронюйте столик у BrewMug на ${site.address.street}, ${site.address.city}. Оберіть дату, час і кількість гостей — підтвердимо дзвінком протягом 15 хвилин.`}
+  current="booking"
+>
+  <TitleBand
+    {site}
+    hand="столик на вечір"
+    title="Забронювати столик"
+    lead="Оберіть дату, час і кількість гостей. Підтвердимо дзвінком протягом 15 хвилин."
+  />
+
+  <section class="section booking-page">
+    <div class="container booking-page__grid">
+      <BookingForm {site} />
+
+      <aside class="booking-side" aria-labelledby="how-title">
+        <p class="hand">як це працює</p>
+        <h2 id="how-title">Три кроки</h2>
+        <ol class="steps" role="list">
+          {
+            steps.map((s) => (
+              <li class="step">
+                <span class="step__num" aria-hidden="true">
+                  {s.n}
+                </span>
+                <div>
+                  <h3>{s.title}</h3>
+                  <p>{s.text}</p>
+                </div>
+              </li>
+            ))
+          }
+        </ol>
+
+        <div class="no-seats">
+          <h3>Немає місць на цей час?</h3>
+          <p>Зателефонуйте — запропонуємо найближчий вільний час або залишите звернення.</p>
+          <a class="inline-link" href={`tel:${site.phone}`}>{site.phoneDisplay}</a>
+          <a class="inline-link" href="/kontakty/#form">Написати нам <span aria-hidden="true">→</span></a>
+        </div>
+      </aside>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .booking-page {
+    background: var(--c-cream);
+  }
+  .booking-page__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.9fr);
+    gap: var(--sp-9);
+    align-items: start;
+  }
+  .booking-side h2 {
+    margin-bottom: var(--sp-6);
+  }
+  .steps {
+    display: grid;
+    gap: var(--sp-6);
+    margin: 0 0 var(--sp-8);
+    padding: 0;
+    list-style: none;
+  }
+  .step {
+    display: flex;
+    gap: var(--sp-4);
+    align-items: flex-start;
+  }
+  .step__num {
+    font-family: var(--font-hand);
+    font-weight: 700;
+    font-size: var(--fs-num);
+    line-height: 0.9;
+    color: var(--c-coral-deep);
+  }
+  .step h3 {
+    margin-bottom: var(--sp-1);
+  }
+  .step p {
+    color: var(--text-muted);
+    font-size: var(--fs-small);
+  }
+  .no-seats {
+    display: grid;
+    gap: var(--sp-3);
+    justify-items: start;
+    padding: var(--sp-5);
+    background: var(--c-paper);
+    border: 2px dashed var(--c-ink);
+    border-radius: var(--radius-md);
+  }
+  .no-seats p {
+    color: var(--text-muted);
+    font-size: var(--fs-small);
+  }
+  .inline-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    color: var(--c-coral-deep);
+    font-weight: 700;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+  }
+  .inline-link:hover {
+    border-bottom-color: currentColor;
+  }
+  .inline-link:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 3px;
+  }
+  @media (max-width: 64rem) {
+    .booking-page__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

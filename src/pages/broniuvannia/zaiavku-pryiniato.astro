@@ -1,0 +1,63 @@
+---
+import Base from '../../layouts/Base.astro';
+import Button from '../../components/Button.astro';
+import { loadData } from '../../../scripts/load-data.mjs';
+import type { SiteData } from '../../lib/types';
+
+const loaded = loadData(process.cwd());
+const site = loaded.site as SiteData;
+const ref = Astro.url.searchParams.get('id');
+---
+
+<Base title="Заявку прийнято" description="Дякуємо! Заявку на столик прийнято." noindex>
+  <section class="section thanks">
+    <div class="container thanks__inner">
+      <p class="hand">дякуємо</p>
+      <h1>Заявку прийнято</h1>
+      <p class="thanks__lead">
+        Ми зателефонуємо на вказаний номер протягом 15 хвилин, щоб підтвердити столик.
+        {ref && <span class="thanks__ref">Номер заявки: <strong>{ref}</strong></span>}
+      </p>
+      <div class="thanks__actions">
+        <Button href="/menu/kava/">Подивитися меню</Button>
+        <Button href="/" variant="light">На головну</Button>
+      </div>
+      <p class="thanks__phone">
+        Не додзвонилися? Телефонуйте: <a href={`tel:${site.phone}`}>{site.phoneDisplay}</a>
+      </p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .thanks {
+    background: var(--c-cream);
+    min-height: 60vh;
+    display: grid;
+    align-items: center;
+  }
+  .thanks__inner {
+    max-width: 46rem;
+  }
+  .thanks__lead {
+    margin-block: var(--sp-4);
+    font-size: var(--fs-lead);
+    line-height: var(--lh-lead);
+    color: var(--text-muted);
+  }
+  .thanks__ref {
+    display: block;
+    margin-top: var(--sp-2);
+    color: var(--text);
+  }
+  .thanks__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-3);
+    margin-block: var(--sp-6);
+  }
+  .thanks__phone {
+    font-size: var(--fs-small);
+    color: var(--text-muted);
+  }
+</style>
