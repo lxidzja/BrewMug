@@ -1,0 +1,14 @@
+# Cloudflare Workers + static assets.
+# Функції /api/* лежать у functions/api/ і збираються разом зі швидким Worker-ом.
+name = "brewmug"
+compatibility_date = "2026-01-01"
+pages_build_output_dir = "dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "brewmug"
+database_id = "00000000-0000-0000-0000-000000000000" # замінити після `wrangler d1 create brewmug`
+
+[vars]
+SITE_URL = "https://brewmug.example"
+RETENTION_DAYS = "90"

@@ -1,0 +1,53 @@
+{
+  "name": "brewmug",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Сайт кав'ярні BrewMug — адаптивний сайт з меню, контактами та бронюванням",
+  "engines": {
+    "node": ">=22.23.4"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "node scripts/build.mjs",
+    "build:preview": "node scripts/build.mjs --allow-placeholders",
+    "preview": "astro preview",
+    "check": "astro check && tsc --noEmit -p tsconfig.server.json",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "tokens": "node design/build-tokens.mjs",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "test:a11y": "playwright test tests/a11y",
+    "lhci": "lhci autorun",
+    "server:dev": "tsx watch server/dev.mjs",
+    "stats": "node scripts/stats.mjs",
+    "bookings": "node scripts/bookings.mjs"
+  },
+  "dependencies": {
+    "@fontsource-variable/alegreya": "5.3.0",
+    "@fontsource-variable/caveat": "5.3.0",
+    "@fontsource/alegreya-sans": "5.3.0",
+    "astro": "7.4.4",
+    "yaml": "^2.9.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.12",
+    "@astrojs/sitemap": "3.7.4",
+    "@axe-core/playwright": "4.14.0",
+    "@eslint/js": "^10.0.1",
+    "@lhci/cli": "^0.15.1",
+    "@playwright/test": "1.64.1",
+    "@types/node": "^26.6.6",
+    "esbuild": "^0.28.2",
+    "eslint": "^10.14.0",
+    "eslint-plugin-astro": "^3.2.1",
+    "prettier": "3.9.10",
+    "prettier-plugin-astro": "1.1.2",
+    "tsx": "^4.23.15",
+    "typescript": "5.9.3",
+    "typescript-eslint": "^8.72.1",
+    "vitest": "5.0.5"
+  }
+}

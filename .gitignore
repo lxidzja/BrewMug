@@ -1,0 +1,33 @@
+# Документи, пов'язані з лабами (Word, Excel тощо) — не в репозиторії
+documents/
+
+# Залежності та збірка
+node_modules/
+dist/
+.astro/
+.wrangler/
+functions-dist/
+
+# Тести
+playwright-report/
+test-results/
+.lighthouseci/
+
+# Секрети й локальні налаштування
+.env
+.env.*
+!.env.example
+.dev.vars
+*.local
+
+# Локальна база даних
+*.sqlite
+*.sqlite-journal
+data/local/
+
+# ОС і редактори
+Thumbs.db
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
