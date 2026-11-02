@@ -1,0 +1,71 @@
+---
+/**
+ * Живий статус «відчинено / зачинено».
+ * Без JS показує нейтральний текст «Години роботи» + таблицю нижче на сторінці.
+ * JS (src/scripts/open-now.ts) підмінює текст і клас.
+ */
+export interface Props {
+  /** резервний текст для режиму без JS */
+  fallback?: string;
+  class?: string;
+}
+const { fallback = 'Перевіряємо, чи відчинено', class: cls = '' } = Astro.props;
+---
+
+<span class={`open-now ${cls}`} data-open-now data-state="unknown">
+  <span class="open-now__dot" aria-hidden="true"></span>
+  <span class="open-now__text" data-open-now-text>{fallback}</span>
+</span>
+
+<script>
+  import '../scripts/open-now.ts';
+</script>
+
+<style>
+  .open-now {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    font-family: var(--font-sans);
+    font-size: var(--fs-small);
+    font-weight: 700;
+    line-height: 1.3;
+    padding: 5px 12px;
+    border-radius: var(--radius-md);
+    background: var(--c-cream-2);
+    color: var(--c-ink);
+  }
+  .open-now__dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+  }
+  .open-now[data-state='open'] {
+    background: var(--c-teal);
+    color: var(--c-white);
+  }
+  .open-now[data-state='open'] .open-now__dot {
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  .open-now[data-state='closed'] {
+    background: transparent;
+    color: var(--c-coral-deep);
+    box-shadow: inset 0 0 0 2px var(--c-coral-deep);
+  }
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.35;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .open-now[data-state='open'] .open-now__dot {
+      animation: none;
+    }
+  }
+</style>

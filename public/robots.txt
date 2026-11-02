@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /broniuvannia/zaiavku-pryiniato/
+Disallow: /konfidentsiinist/
+Disallow: /_kit
+
+Sitemap: https://brewmug.example/sitemap-index.xml

@@ -1,0 +1,89 @@
+---
+import type { MenuCategory } from '../lib/types';
+
+export interface Props {
+  categories: MenuCategory[];
+  active: string;
+}
+
+const { categories, active } = Astro.props;
+
+const ICON: Record<string, string> = {
+  kava: '/illo/flat.svg',
+  chai: '/illo/icedlatte.svg',
+  deserty: '/illo/honeycake.svg',
+  sneky: '/illo/sandwich.svg',
+};
+---
+
+<nav class="menu-tabs" aria-label="Категорії меню">
+  {
+    categories.map((c) => (
+      <a
+        class:list={['menu-tab', { 'is-active': c.category === active }]}
+        href={`/menu/${c.category}/`}
+        aria-current={c.category === active ? 'page' : undefined}
+      >
+        <img src={ICON[c.category]} width="52" height="52" alt="" aria-hidden="true" loading="eager" />
+        <span>{c.title}</span>
+      </a>
+    ))
+  }
+</nav>
+
+<style>
+  .menu-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    border-bottom: var(--border);
+    margin-bottom: var(--sp-8);
+  }
+  .menu-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-2) var(--sp-4) var(--sp-3);
+    min-height: 64px;
+    font-family: var(--font-h3);
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    border-bottom: 4px solid transparent;
+    margin-bottom: -2px;
+  }
+  .menu-tab img {
+    border-radius: 50%;
+    background: var(--c-cream-2);
+    padding: 6px;
+  }
+  .menu-tab:hover {
+    color: var(--c-ink);
+    background: var(--c-cream);
+  }
+  .menu-tab:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: -3px;
+    border-radius: var(--radius-sm);
+  }
+  .menu-tab.is-active {
+    color: var(--c-ink);
+    border-bottom-color: var(--c-coral-deep);
+  }
+  .menu-tab.is-active img {
+    background: var(--c-peach-soft);
+  }
+  @media (max-width: 40rem) {
+    .menu-tabs {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0;
+    }
+    .menu-tab {
+      font-size: 1.05rem;
+      padding-inline: var(--sp-2);
+      justify-content: center;
+    }
+  }
+</style>

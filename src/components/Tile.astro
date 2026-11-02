@@ -1,0 +1,53 @@
+---
+
+export interface Props {
+  src: string;
+  alt?: string;
+  /** розмір плитки в px на десктопі */
+  size?: number;
+  bg?: 'cream' | 'soft' | 'paper' | 'peach';
+  class?: string;
+}
+
+const { src, alt = '', size = 100, bg = 'cream', class: cls = '' } = Astro.props;
+---
+
+<span class={`tile tile--${bg} ${cls}`} style={`--tile:${size}px`}>
+  <img
+    src={src}
+    width={Math.round(size * 0.82)}
+    height={Math.round(size * 0.82)}
+    alt={alt}
+    loading="lazy"
+    decoding="async"
+  />
+</span>
+
+<style>
+  .tile {
+    display: grid;
+    place-items: center;
+    width: var(--tile);
+    height: var(--tile);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .tile--cream {
+    background: var(--c-cream-2);
+  }
+  .tile--soft {
+    background: var(--c-peach-soft);
+  }
+  .tile--paper {
+    background: var(--c-paper);
+  }
+  .tile--peach {
+    background: var(--c-peach);
+  }
+  .tile img {
+    width: 82%;
+    height: auto;
+  }
+</style>

@@ -1,0 +1,248 @@
+---
+import type { SiteData } from '../lib/types';
+import { WEEKDAYS_UK, WEEK_ORDER, dayHours, fromMinutes } from '../lib/hours';
+
+export interface Props {
+  site: SiteData;
+  current?: string;
+}
+
+const { site } = Astro.props;
+
+const links = [
+  { href: '/', label: 'Головна' },
+  { href: '/menu/kava/', label: 'Меню' },
+  { href: '/pro-nas/', label: 'Про нас' },
+  { href: '/kontakty/', label: 'Контакти' },
+  { href: '/broniuvannia/', label: 'Бронювання' },
+];
+
+/** Години у вигляді «8:00–22:00» на день тижня, згруповані. */
+function hoursLabel(days: number[]): string {
+  const day = '2026-11-02'; // понеділок, зима — лише для отримання інтервалів правил
+  const map: Record<number, string> = {};
+  for (const d of days) {
+    // знаходимо день з таким weekday
+    for (let i = 0; i < 7; i++) {
+      const dt = new Date(Date.UTC(2026, 10, 2 + i));
+      if (dt.getUTCDay() === d) {
+        const dh = dayHours(dt.toISOString().slice(0, 10), site.hours, []);
+        const r = dh.ranges[0];
+        map[d] = r ? `${fromMinutes(r.open).replace(/^0/, '')}–${fromMinutes(r.close).replace(/^0/, '')}` : 'зачинено';
+        break;
+      }
+    }
+  }
+  void day;
+  return days.map((d) => map[d] ?? '').join(' / ');
+}
+const phoneHref = `tel:${site.phone}`;
+---
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <a class="footer-logo" href="/">
+        <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true" focusable="false">
+          <path
+            d="M 4.4 4.6 L 15.6 4.6 M 5.4 8.2 L 14.6 8.2 L 14.6 14.6 C 14.6 17.141 12.541 19.2 10 19.2 C 7.459 19.2 5.4 17.141 5.4 14.6 Z M 15.6 10.4 L 18.2 10.4 C 19.746 10.4 21 11.654 21 13.2 C 21 14.746 19.746 16 18.2 16 L 15.6 16"
+            fill="none"
+            stroke="#F7A26A"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"></path>
+        </svg>
+        <span>BrewMug</span>
+      </a>
+      <p class="footer-tagline">{site.tagline}</p>
+    </div>
+
+    <nav class="footer-col" aria-label="Сторінки сайту">
+      <h2 class="footer-title">Сторінки</h2>
+      <ul role="list">
+        {
+          links.map((l) => (
+            <li>
+              <a href={l.href}>{l.label}</a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="footer-col">
+      <h2 class="footer-title">Контакти</h2>
+      <address>
+        <p>{site.address.street}, {site.address.city}</p>
+        <p><a href={phoneHref}>{site.phoneDisplay}</a></p>
+        <p><a href={`mailto:${site.email}`}>{site.email}</a></p>
+      </address>
+    </div>
+
+    <div class="footer-col">
+      <h2 class="footer-title">Години</h2>
+      <ul role="list" class="footer-hours">
+        {
+          WEEK_ORDER.map((d) => {
+            const label = hoursLabel([d]).replace(/ /g, '');
+            return (
+              <li>
+                <span>{WEEKDAYS_UK[d]}</span> <span>{label}</span>
+              </li>
+            );
+          })
+        }
+      </ul>
+    </div>
+  </div>
+
+  <div class="container footer-bottom">
+    <p>© {new Date().getFullYear()} BrewMug. Зроблено в Києві, на Подолі.</p>
+    <ul role="list" class="footer-legal">
+      <li><a href="/konfidentsiinist/">Політика конфіденційності</a></li>
+      {
+        site.social.map((s) => (
+          <li>
+            <a href={s.href} rel="noopener noreferrer" target="_blank">
+              {s.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    background: var(--surface-dark);
+    color: var(--c-cream);
+    margin-top: auto;
+  }
+  .footer-inner {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr 1fr;
+    gap: var(--sp-8);
+    padding-block: var(--sp-10) var(--sp-7);
+  }
+  .footer-brand {
+    max-width: 20ch;
+  }
+  .footer-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.6rem;
+    color: var(--c-cream);
+    text-decoration: none;
+  }
+  .footer-tagline {
+    margin-top: var(--sp-3);
+    font-family: var(--font-hand);
+    font-weight: 700;
+    font-size: 1.6rem;
+    line-height: 1.1;
+    color: var(--c-peach);
+  }
+  .footer-title {
+    font-family: var(--font-sans);
+    font-size: var(--fs-label);
+    font-weight: 700;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--c-peach);
+    margin-bottom: var(--sp-4);
+  }
+  .footer-col ul,
+  .footer-col address {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-style: normal;
+  }
+  .footer-col li + li {
+    margin-top: var(--sp-2);
+  }
+  .footer-col a,
+  .footer-col p {
+    color: var(--c-cream-2);
+    text-decoration: none;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+  .footer-col a {
+    display: inline-block;
+    padding-block: 2px;
+    text-underline-offset: 0.2em;
+  }
+  .footer-col a:hover {
+    color: var(--c-cream);
+    text-decoration: underline;
+  }
+  .footer-col a:focus-visible {
+    outline: 3px solid var(--c-peach);
+    outline-offset: 2px;
+  }
+  .footer-hours li {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    font-size: 1rem;
+    color: var(--c-cream-2);
+    white-space: nowrap;
+  }
+  .footer-hours li span:first-child {
+    color: var(--c-cream);
+  }
+  .footer-bottom {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--sp-4);
+    padding-block: var(--sp-5) var(--sp-7);
+    border-top: 1px dashed rgb(251 233 221 / 0.3);
+    font-size: 0.9375rem;
+    color: var(--c-cream-2);
+  }
+  .footer-legal {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-4);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .footer-legal a {
+    color: var(--c-cream-2);
+    text-decoration: none;
+  }
+  .footer-legal a:hover {
+    text-decoration: underline;
+    color: var(--c-cream);
+  }
+  .footer-legal a:focus-visible {
+    outline: 3px solid var(--c-peach);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 64rem) {
+    .footer-inner {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--sp-7);
+    }
+    .footer-brand {
+      grid-column: 1 / -1;
+      max-width: none;
+    }
+  }
+  @media (max-width: 40rem) {
+    .footer-inner {
+      grid-template-columns: 1fr;
+    }
+    .footer-bottom {
+      flex-direction: column;
+    }
+  }
+</style>

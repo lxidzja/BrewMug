@@ -1,0 +1,40 @@
+---
+import type { SiteData } from '../lib/types';
+
+export interface Props {
+  site: SiteData;
+  hand: string;
+  title: string;
+  lead?: string;
+}
+
+const { hand, title, lead } = Astro.props;
+---
+
+<section class="title-band">
+  <div class="container">
+    <p class="hand">{hand}</p>
+    <h1>{title}</h1>
+    {lead && <p class="title-band__lead">{lead}</p>}
+  </div>
+</section>
+
+<style>
+  .title-band {
+    background: var(--c-cream);
+    border-bottom: var(--border);
+  }
+  .title-band :global(.container) {
+    padding-block: var(--sp-9) var(--sp-8);
+  }
+  h1 {
+    margin-top: var(--sp-1);
+  }
+  .title-band__lead {
+    margin-top: var(--sp-4);
+    max-width: 60ch;
+    font-size: var(--fs-lead);
+    line-height: var(--lh-lead);
+    color: var(--text-muted);
+  }
+</style>

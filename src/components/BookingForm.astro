@@ -1,0 +1,389 @@
+---
+import type { SiteData } from '../lib/types';
+import Button from './Button.astro';
+import { slotsFor } from '../lib/hours';
+import { firstBookableDate, isSlotInFuture, slotsWithAvailability } from '../lib/booking';
+import { isoDateInZone, WEEKDAYS_UK } from '../lib/hours';
+
+export interface Props {
+  site: SiteData;
+  /** помилки з сервера (після POST без JS) */
+  errors?: Record<string, string>;
+  values?: Record<string, string>;
+  /** значення, що прийшли з посилання «на цей час зайнято» */
+  alternatives?: string[];
+}
+
+const { site, errors = {}, values = {}, alternatives = [] } = Astro.props;
+
+const now = new Date();
+const today = isoDateInZone(now, site.timezone);
+const cfg = site.booking;
+const firstDate = firstBookableDate(today, site.hours, site.closures, cfg, now, site.timezone);
+const maxDate = new Date(Date.UTC(...(today.split('-').map(Number) as [number, number, number])) );
+maxDate.setUTCDate(maxDate.getUTCDate() + cfg.horizonDays);
+const maxIso = maxDate.toISOString().slice(0, 10);
+
+const chosen = /^\d{4}-\d{2}-\d{2}$/.test(values.date ?? '') ? values.date! : firstDate;
+const taken: Record<string, number> = {};
+const slots = slotsWithAvailability(chosen, site.hours, site.closures, cfg, now, site.timezone, taken);
+
+// короткі підписи днів для кнопок швидкого вибору
+const quickDays = Array.from({ length: 4 }, (_, i) => {
+  const [y, m, d] = today.split('-').map(Number);
+  const dt = new Date(Date.UTC(y!, m! - 1, d! + i));
+  const iso = dt.toISOString().slice(0, 10);
+  const hasSlots = slotsFor(iso, site.hours, site.closures, cfg.slotStepMinutes).some((t) =>
+    isSlotInFuture(iso, t, now, site.timezone, cfg.minLeadMinutes),
+  );
+  return { iso, label: i === 0 ? 'Сьогодні' : i === 1 ? 'Завтра' : WEEKDAYS_UK[dt.getUTCDay()], hasSlots, dow: dt.getUTCDay() };
+});
+
+const stamp = now.getTime();
+const err = (k: string) => errors[k];
+---
+
+<form class="booking-form" method="post" action="/api/booking" data-booking-form novalidate>
+  <input type="hidden" name="ts" value={stamp} />
+  <input type="hidden" name="slug" value="" />
+  <!-- honeypot: прихований від людей і скрінрідерів -->
+  <div class="hp" aria-hidden="true">
+    <label>Не заповнюйте це поле <input type="text" name="company" tabindex="-1" autocomplete="off" /></label>
+  </div>
+
+  <h2>Дані бронювання</h2>
+
+  <div class="form-grid">
+    <div class="field">
+      <label for="b-name">Імʼя та прізвище <span class="req" aria-hidden="true">*</span></label>
+      <input
+        id="b-name"
+        name="name"
+        type="text"
+        autocomplete="name"
+        required
+        minlength="2"
+        maxlength="60"
+        value={values.name ?? ''}
+        aria-describedby={err('name') ? 'b-name-err' : undefined}
+        aria-invalid={err('name') ? 'true' : undefined}
+      />
+      {err('name') && <p class="error" id="b-name-err">{err('name')}</p>}
+    </div>
+
+    <div class="field">
+      <label for="b-phone">Телефон <span class="req" aria-hidden="true">*</span></label>
+      <input
+        id="b-phone"
+        name="phone"
+        type="tel"
+        inputmode="tel"
+        autocomplete="tel"
+        required
+        placeholder="+380 __ ___ __ __"
+        value={values.phone ?? ''}
+        aria-describedby={err('phone') ? 'b-phone-err' : 'b-phone-hint'}
+        aria-invalid={err('phone') ? 'true' : undefined}
+      />
+      {err('phone') ? (
+        <p class="error" id="b-phone-err">{err('phone')}</p>
+      ) : (
+        <p class="hint" id="b-phone-hint">Для підтвердження дзвінком</p>
+      )}
+    </div>
+
+    <div class="field">
+      <label for="b-date">Дата <span class="req" aria-hidden="true">*</span></label>
+      <input
+        id="b-date"
+        name="date"
+        type="date"
+        required
+        min={today}
+        max={maxIso}
+        value={chosen}
+        data-availability-date
+        aria-describedby={err('date') ? 'b-date-err' : undefined}
+        aria-invalid={err('date') ? 'true' : undefined}
+      />
+      {err('date') && <p class="error" id="b-date-err">{err('date')}</p>}
+      <div class="quick-days">
+        {
+          quickDays.map((d) => (
+            <a
+              href={`#b-date`}
+              class:list={['quick-day', { 'is-active': d.iso === chosen, 'is-off': !d.hasSlots }]}
+              data-quick-date={d.iso}
+            >
+              {d.label}
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+
+  <fieldset class="field time-field">
+    <legend>Час <span class="req" aria-hidden="true">*</span></legend>
+    <div class="times" data-times>
+      {
+        slots.map((s) => {
+          const chosenTime = values.time === s.time;
+          return (
+            <label class:list={['chip', { 'is-selected': chosenTime, 'is-busy': !s.available }]}>
+              <input
+                type="radio"
+                name="time"
+                value={s.time}
+                checked={chosenTime}
+                disabled={!s.available}
+              />
+              <span>{s.time}</span>
+              {!s.available && <span class="sr-only"> — зайнято</span>}
+            </label>
+          );
+        })
+      }
+    </div>
+    <p class="hint">Зайняті години перекреслені. Не знайшли потрібний час — залиште звернення нижче.</p>
+    {err('time') && <p class="error">{err('time')}</p>}
+    {
+      alternatives.length > 0 && (
+        <p class="alt-note">
+          На обраний час місць немає. Вільні години:{' '}
+          {alternatives.map((t) => (
+            <a href={`?time=${t}`}>{t}</a>
+          ))}
+        </p>
+      )
+    }
+  </fieldset>
+
+  <div class="field guests-field">
+    <label for="b-guests">Кількість гостей <span class="req" aria-hidden="true">*</span></label>
+    <div class="guests">
+      {
+        Array.from({ length: Math.min(6, cfg.maxGuests) }, (_, i) => i + 1).map((n) => (
+          <button
+            type="button"
+            class="chip chip--guest"
+            data-guests-choice={n}
+            aria-pressed={String(values.guests ?? '2') === String(n) ? 'true' : 'false'}
+          >
+            {n === 6 && cfg.maxGuests > 6 ? '6+' : String(n)}
+          </button>
+        ))
+      }
+    </div>
+    <input
+      id="b-guests"
+      name="guests"
+      type="number"
+      min="1"
+      max={cfg.maxGuests}
+      inputmode="numeric"
+      value={values.guests ?? '2'}
+      required
+      data-guests-input
+      aria-describedby={err('guests') ? 'b-guests-err' : 'b-guests-hint'}
+      aria-invalid={err('guests') ? 'true' : undefined}
+    />
+    {err('guests') ? <p class="error" id="b-guests-err">{err('guests')}</p> : <p class="hint" id="b-guests-hint">Більше {cfg.maxGuests} — зателефонуйте, підкажемо варіанти.</p>}
+  </div>
+  <div class="field">
+    <label for="b-wishes">Побажання</label>
+    <textarea id="b-wishes" name="wishes" rows="3" maxlength="300" placeholder="Біля вікна, з розеткою">{values.wishes ?? ''}</textarea>
+  </div>
+
+  <Button type="submit" variant="primary" full>Підтвердити бронювання</Button>
+
+  <p class="legal">
+    Натискаючи кнопку, ви погоджуєтесь на обробку імені й телефону для підтвердження бронювання. Зберігаємо
+    їх не довше 90 днів. <a href="/konfidentsiinist/">Політика конфіденційності</a>.
+  </p>
+  <div class="form-status" role="status" aria-live="polite" data-form-status></div>
+</form>
+
+<script>
+  import '../scripts/booking-form.ts';
+</script>
+
+<style>
+  .booking-form {
+    display: grid;
+    gap: var(--sp-6);
+    background: var(--c-paper);
+    border: var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    padding: var(--sp-7);
+  }
+  .booking-form h2 {
+    font-size: var(--fs-h2);
+  }
+  .hp {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--sp-5);
+  }
+  .form-grid .field:last-child {
+    grid-column: 1 / -1;
+  }
+  .field {
+    display: grid;
+    gap: var(--sp-2);
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  .field > label,
+  .field > legend {
+    font-family: var(--font-sans);
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 0;
+  }
+  .req {
+    color: var(--c-coral-deep);
+  }
+  input[type='text'],
+  input[type='tel'],
+  input[type='date'],
+  input[type='number'],
+  textarea {
+    width: 100%;
+    min-height: 52px;
+    padding: var(--sp-3) var(--sp-4);
+    font-family: var(--font-sans);
+    font-size: 1.0625rem;
+    color: var(--c-ink);
+    background: var(--c-white);
+    border: var(--border);
+    border-radius: var(--radius-md);
+  }
+  textarea {
+    min-height: 96px;
+    resize: vertical;
+  }
+  input:focus-visible,
+  textarea:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+  }
+  input[aria-invalid='true'] {
+    border-color: var(--c-coral-deep);
+    box-shadow: 0 0 0 3px rgb(177 58 34 / 0.18);
+  }
+  .hint {
+    font-size: 0.9375rem;
+    color: var(--text-muted);
+  }
+  .error {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--danger);
+  }
+  .alt-note {
+    font-size: 0.9375rem;
+    color: var(--text);
+    background: var(--c-cream);
+    border-radius: var(--radius-sm);
+    padding: var(--sp-3);
+  }
+  .alt-note a {
+    margin-inline: 4px;
+  }
+
+  /* час і гості: стилі перемикачів лежать у src/styles/components.css (глобально),
+     бо скрипт перемальовує чіпи після зміни дати — нові елементи не мають
+     scope-атрибута Astro, і локальні стилі до них не застосовуються */
+  .guests-field #b-guests {
+    width: 120px;
+  }
+  .field--inline {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+  }
+  .field--inline label {
+    font-weight: 400;
+    font-size: 0.9375rem;
+    color: var(--text-muted);
+  }
+  .field--inline input {
+    width: 80px;
+    min-height: 46px;
+  }
+  .quick-days {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+  }
+  .quick-day {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: var(--sp-2) var(--sp-3);
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--c-ink);
+    text-decoration: none;
+    background: var(--c-cream);
+    border-radius: var(--radius-sm);
+  }
+  .quick-day:hover {
+    background: var(--c-cream-2);
+  }
+  .quick-day.is-active {
+    background: var(--c-peach-soft);
+    box-shadow: inset 0 0 0 2px var(--c-ink);
+  }
+  /* заблокований день: приглушений, але текст лишається читабельним (≥4.5:1) */
+  .quick-day.is-off {
+    color: var(--c-ink-soft);
+    background: transparent;
+    box-shadow: inset 0 0 0 2px var(--c-cream-2);
+    text-decoration: line-through;
+    pointer-events: none;
+  }
+  .legal {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .form-status:empty {
+    display: none;
+  }
+  .form-status {
+    padding: var(--sp-4);
+    border-radius: var(--radius-md);
+    font-weight: 700;
+  }
+  .form-status[data-state='error'] {
+    background: #fbe0d8;
+    color: #8a2b16;
+  }
+  .form-status[data-state='ok'] {
+    background: #d9efee;
+    color: #0d4f50;
+  }
+  @media (max-width: 40rem) {
+    .form-grid {
+      grid-template-columns: 1fr;
+    }
+    .booking-form {
+      padding: var(--sp-5);
+    }
+    .chip {
+      min-width: 74px;
+    }
+  }
+</style>

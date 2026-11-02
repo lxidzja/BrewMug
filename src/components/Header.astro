@@ -1,0 +1,298 @@
+---
+import type { SiteData } from '../lib/types';
+
+export interface Props {
+  site: SiteData;
+  /** ключ поточної сторінки для aria-current */
+  current?: string;
+}
+const { site, current = '' } = Astro.props;
+
+const links = [
+  { href: '/', key: 'home', label: 'Головна' },
+  { href: '/menu/kava/', key: 'menu', label: 'Меню' },
+  { href: '/pro-nas/', key: 'about', label: 'Про нас' },
+  { href: '/kontakty/', key: 'contacts', label: 'Контакти' },
+  { href: '/broniuvannia/', key: 'booking', label: 'Бронювання' },
+];
+---
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="logo" href="/" aria-label="BrewMug — на головну">
+      <svg class="logo-icon" viewBox="0 0 24 24" width="34" height="34" aria-hidden="true" focusable="false">
+        <path
+          d="M 4.4 4.6 L 15.6 4.6 M 5.4 8.2 L 14.6 8.2 L 14.6 14.6 C 14.6 17.141 12.541 19.2 10 19.2 C 7.459 19.2 5.4 17.141 5.4 14.6 Z M 15.6 10.4 L 18.2 10.4 C 19.746 10.4 21 11.654 21 13.2 C 21 14.746 19.746 16 18.2 16 L 15.6 16"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"></path>
+      </svg>
+      <span class="logo-text">BrewMug</span>
+    </a>
+
+    <nav class="site-nav" aria-label="Основна навігація">
+      <ul role="list" class="nav-list">
+        {
+          links.map((l) => (
+            <li>
+              <a
+                class="nav-link"
+                href={l.href}
+                aria-current={current === l.key ? 'page' : undefined}
+              >
+                {l.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="header-actions">
+      <a class="header-phone" href={`tel:${site.phone}`}>
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+          <path
+            d="M 6.4 3.6 L 9.4 3.6 L 11 8 L 8.8 9.6 C 9.8 13.2 10.8 14.2 14.4 15.2 L 16 11 L 20.4 12.6 L 20.4 15.6 C 20.4 17.26 19.06 18.6 17.4 18.6 C 9.3 18.6 3.4 12.7 3.4 6.6 C 3.4 4.94 4.74 3.6 6.4 3.6 Z"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"></path>
+        </svg>
+        <span class="sr-only">Зателефонувати: </span>{site.phoneDisplay}
+      </a>
+      <a class="btn btn--primary" href="/broniuvannia/">Забронювати</a>
+    </div>
+
+    <details class="mobile-nav">
+      <summary class="mobile-nav__toggle" aria-label="Меню сайту">
+        <span class="mobile-nav__bars" aria-hidden="true"></span>
+      </summary>
+      <nav class="mobile-nav__panel" aria-label="Мобільна навігація">
+        <ul role="list">
+          {
+            links.map((l) => (
+              <li>
+                <a href={l.href} aria-current={current === l.key ? 'page' : undefined}>
+                  {l.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+        <a class="mobile-nav__phone" href={`tel:${site.phone}`}>{site.phoneDisplay}</a>
+      </nav>
+    </details>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    background: var(--surface);
+    border-bottom: var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+  .header-inner {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-6);
+    min-height: 76px;
+  }
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    text-decoration: none;
+    color: var(--c-coral-deep);
+    flex-shrink: 0;
+  }
+  .logo-text {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.75rem;
+    line-height: 1;
+    color: var(--c-ink);
+    letter-spacing: -0.01em;
+  }
+  .site-nav {
+    margin-inline: auto;
+  }
+  .nav-list {
+    display: flex;
+    gap: var(--sp-6);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .nav-link {
+    display: inline-block;
+    padding-block: var(--sp-3);
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: var(--c-ink);
+    text-decoration: none;
+    border-bottom: 3px solid transparent;
+  }
+  .nav-link:hover {
+    border-bottom-color: var(--c-cream-2);
+  }
+  .nav-link[aria-current='page'] {
+    color: var(--c-coral-deep);
+    border-bottom-color: var(--c-coral-deep);
+    font-weight: 700;
+  }
+  .nav-link:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-5);
+  }
+  .header-phone {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding-block: var(--sp-2);
+    color: var(--c-ink);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1.0625rem;
+    white-space: nowrap;
+  }
+  .header-phone:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+  .header-phone svg {
+    color: var(--c-coral-deep);
+    flex-shrink: 0;
+  }
+
+  /* Мобільне меню працює без JS (details/summary) */
+  .mobile-nav {
+    display: none;
+    margin-left: auto;
+    position: relative;
+  }
+  .mobile-nav__toggle {
+    list-style: none;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border: var(--border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    background: var(--c-paper);
+  }
+  .mobile-nav__toggle::-webkit-details-marker {
+    display: none;
+  }
+  .mobile-nav__bars,
+  .mobile-nav__bars::before,
+  .mobile-nav__bars::after {
+    display: block;
+    width: 22px;
+    height: 2.5px;
+    background: var(--c-ink);
+    border-radius: 2px;
+    transition: transform 0.15s ease;
+  }
+  .mobile-nav__bars {
+    position: relative;
+  }
+  .mobile-nav__bars::before,
+  .mobile-nav__bars::after {
+    content: '';
+    position: absolute;
+    left: 0;
+  }
+  .mobile-nav__bars::before {
+    top: -7px;
+  }
+  .mobile-nav__bars::after {
+    top: 7px;
+  }
+  .mobile-nav[open] .mobile-nav__bars {
+    background: transparent;
+  }
+  .mobile-nav[open] .mobile-nav__bars::before {
+    transform: translateY(7px) rotate(45deg);
+  }
+  .mobile-nav[open] .mobile-nav__bars::after {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+  .mobile-nav__panel {
+    position: absolute;
+    right: 0;
+    top: calc(100% + var(--sp-2));
+    min-width: 240px;
+    background: var(--c-paper);
+    border: var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
+    padding: var(--sp-3);
+    z-index: 30;
+  }
+  .mobile-nav__panel ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .mobile-nav__panel a {
+    display: block;
+    padding: var(--sp-3);
+    min-height: 44px;
+    color: var(--c-ink);
+    text-decoration: none;
+    font-size: 1.125rem;
+    border-radius: var(--radius-sm);
+  }
+  .mobile-nav__panel a:hover {
+    background: var(--c-cream);
+  }
+  .mobile-nav__panel a[aria-current='page'] {
+    color: var(--c-coral-deep);
+    font-weight: 700;
+  }
+  .mobile-nav__phone {
+    margin-top: var(--sp-2);
+    border-top: 1px dashed var(--c-cream-2);
+    font-weight: 700;
+  }
+
+  /* без JS меню не закривається кліком поза ним — додаємо прозору «завісу» */
+  .mobile-nav[open]::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: rgb(75 59 58 / 0.28);
+    z-index: 25;
+  }
+  .mobile-nav__panel {
+    max-height: calc(100dvh - 96px);
+    overflow-y: auto;
+  }
+  /* десктопна панель навігації повинна бути в DOM лише в desktop-розкладці,
+     інакше на мобільному існують дві навігації з однаковими посиланнями */
+  .mobile-nav {
+    display: none;
+  }
+  @media (max-width: 64rem) {
+    .site-nav,
+    .header-phone,
+    .header-actions .btn {
+      display: none;
+    }
+    .mobile-nav {
+      display: block;
+    }
+  }
+</style>

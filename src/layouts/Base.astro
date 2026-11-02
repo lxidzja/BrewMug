@@ -1,0 +1,94 @@
+---
+import '../styles/fonts.css';
+import '../styles/tokens.css';
+import '../styles/base.css';
+import '../styles/components.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Seo from '../components/Seo.astro';
+import { loadData } from '../../scripts/load-data.mjs';
+
+export interface Props {
+  title: string;
+  description: string;
+  /** унікальна назва сторінки для прототипу й навігації */
+  current?: string;
+  noindex?: boolean;
+  /** meta refresh для сторінок-перенаправлень */
+  refreshTo?: string;
+}
+
+const { title, description, current = '', noindex = false, refreshTo } = Astro.props;
+const site = loadData(process.cwd()).site;
+const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://brewmug.example').href;
+
+// Структуровані дані для пошукових систем (адреса, телефон, години роботи).
+// Часи у форматі schema.org: Mo-Su HH:MM.
+const DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+const dayName = (d: number): string => DAYS[d] ?? 'Mo';
+const openingHours = site.hours.flatMap((rule) =>
+  rule.days.map((d) => ({
+    '@type': 'OpeningHoursSpecification',
+    dayOfWeek: 'https://schema.org/' + dayName(d),
+    opens: rule.open,
+    closes: rule.close.length === 5 ? rule.close : rule.close.replace(/^2[4-9]/, '0'),
+  })),
+);
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'CafeOrCoffeeShop',
+  name: site.name,
+  description: site.tagline,
+  url: canonical,
+  telephone: site.phone,
+  email: site.email,
+  servesCuisine: 'кава, десерти',
+  priceRange: '₴₴',
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: site.address.street,
+    addressLocality: site.address.city,
+    postalCode: site.address.postalCode,
+    addressCountry: 'UA',
+  },
+  geo: { '@type': 'GeoCoordinates', latitude: site.map.lat, longitude: site.map.lng },
+  openingHoursSpecification: openingHours,
+  hasMenu: new URL('/menu/kava/', Astro.site ?? 'https://brewmug.example').href,
+  image: new URL('/og-cover.svg', Astro.site ?? 'https://brewmug.example').href,
+};
+---
+
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#FBE9DD" />
+    <Seo {title} {description} {canonical} {noindex} />
+    {refreshTo && <meta http-equiv="refresh" content={`0; url=${refreshTo}`} />}
+    {!noindex && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link
+      rel="preload"
+      href="/fonts/sans-cyr-400.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/alegreya-cyr.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Перейти до вмісту</a>
+    <Header {site} {current} />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <Footer {site} {current} />
+  </body>
+</html>

@@ -1,0 +1,84 @@
+---
+/**
+ * Карта кав'ярні — вбудова Google Maps, одразу на сторінці.
+ * iframe ізольована: не тягне скриптів у нашу сторінку, а `loading="lazy"`
+ * не дає їй гальмувати перший екран.
+ */
+export interface Props {
+  lat: number;
+  lng: number;
+  label: string;
+  city: string;
+  /** посилання «прокласти маршрут» */
+  routeHref: string;
+  /** посилання на повну карту */
+  mapHref: string;
+}
+
+const { lat, lng, label, city, routeHref, mapHref } = Astro.props;
+
+const embedSrc = `https://maps.google.com/maps?q=${lat},${lng}&z=17&hl=uk&output=embed`;
+---
+
+<div class="map-card">
+  <div class="map">
+    <iframe
+      class="map__iframe"
+      src={embedSrc}
+      title={`Google Maps — ${label}, ${city}`}
+      loading="lazy"
+      referrerpolicy="no-referrer-when-downgrade"
+      allowfullscreen></iframe>
+  </div>
+
+  <div class="map-card__links">
+    <a class="map-card__link" href={routeHref} target="_blank" rel="noopener noreferrer">Прокласти маршрут</a>
+    <a class="map-card__link" href={mapHref} target="_blank" rel="noopener noreferrer">Відкрити на OpenStreetMap</a>
+  </div>
+</div>
+
+<style>
+  .map-card {
+    display: grid;
+    gap: var(--sp-3);
+  }
+  .map {
+    border: var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    aspect-ratio: 16 / 10;
+    background: var(--c-cream-2);
+  }
+  .map__iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+  .map-card__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-4);
+  }
+  .map-card__link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--c-coral-deep);
+    font-weight: 700;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+  }
+  .map-card__link:hover {
+    border-bottom-color: currentColor;
+  }
+  .map-card__link:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 3px;
+  }
+  @media (max-width: 40rem) {
+    .map {
+      aspect-ratio: 4 / 3;
+    }
+  }
+</style>

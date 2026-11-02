@@ -1,0 +1,42 @@
+---
+/**
+ * Вставляє ілюстрацію страви.
+ * SVG експортовані з генератора (120×120), тому віддаємо їх через <img>:
+ * кешуються браузером і не збільшують HTML сторінки.
+ */
+export interface Props {
+  src?: string;
+  width?: number;
+  height?: number;
+  /** декоративне зображення — порожній alt (назва страви є поруч у тексті) */
+  alt?: string;
+  class?: string;
+  sizes?: string;
+  loading?: 'lazy' | 'eager';
+  fetchpriority?: 'high' | 'low' | 'auto';
+}
+
+const {
+  src = '',
+  width = 120,
+  height = 120,
+  alt = '',
+  class: cls = '',
+  sizes,
+  loading = 'lazy',
+  fetchpriority,
+} = Astro.props;
+---
+
+<img
+  class={cls}
+  src={src}
+  width={width}
+  height={height}
+  alt={alt}
+  aria-hidden={alt === '' ? 'true' : undefined}
+  sizes={sizes}
+  loading={loading}
+  decoding="async"
+  fetchpriority={fetchpriority}
+/>

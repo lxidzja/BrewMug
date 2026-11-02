@@ -1,0 +1,87 @@
+/*
+ * Глобальні стилі для елементів, які створюються скриптом у рантаймі.
+ *
+ * Чому окремий файл: Astro scope-ує стилі <style> у компонентах
+ * (додає атрибут data-astro-cid-…). Елементи, які з'являються пізніше
+ * через document.createElement (перепобудова чіпів часу після зміни дати),
+ * цього атрибута не мають — і стилі компонента до них не застосовуються.
+ */
+
+@layer components {
+  /* Час і кількість гостей — перемикачі (radio усередині label / кнопки) */
+  .times,
+  .guests {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+  }
+
+  .chip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 86px;
+    min-height: 46px;
+    padding: var(--sp-2) var(--sp-3);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+    color: var(--c-ink);
+    background: var(--c-white);
+    border: var(--border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* справжній radio/number прихований, але доступний з клавіатури й екрана читання */
+  .chip input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+  }
+
+  .chip:hover {
+    background: var(--c-cream);
+  }
+
+  .chip:has(input:focus-visible),
+  .chip:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 3px;
+  }
+
+  .chip.is-selected,
+  button.chip[aria-pressed='true'] {
+    background: var(--c-ink);
+    color: var(--c-cream);
+  }
+
+  /* зайнятий час: пунктирна рамка + перекреслення (колір не єдиний носій) */
+  .chip.is-busy {
+    color: var(--text-muted);
+    border-style: dashed;
+    cursor: not-allowed;
+    text-decoration: line-through;
+  }
+
+  .chip.is-busy:hover {
+    background: var(--c-white);
+  }
+
+  .chip--guest {
+    min-width: 56px;
+  }
+
+  @media (max-width: 40rem) {
+    .chip {
+      min-width: 74px;
+    }
+  }
+}

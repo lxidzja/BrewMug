@@ -1,0 +1,113 @@
+---
+import type { SiteData } from '../lib/types';
+import { WEEKDAYS_UK, WEEK_ORDER, dayHours, fromMinutes, isoDateInZone } from '../lib/hours';
+
+export interface Props {
+  site: SiteData;
+  /** виділити сьогоднішній день */
+  highlightToday?: boolean;
+  /** компактний варіант для головної */
+  compact?: boolean;
+}
+
+const { site, highlightToday = true, compact = false } = Astro.props;
+
+const now = new Date();
+const todayIso = isoDateInZone(now, site.timezone);
+
+const rows = WEEK_ORDER.map((d) => {
+  // дата найближчого дня з цим weekday
+  let iso = todayIso;
+  for (let i = 0; i < 7; i++) {
+    const dt = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + i));
+    if (dt.getUTCDay() === d) {
+      iso = dt.toISOString().slice(0, 10);
+      break;
+    }
+  }
+  const dh = dayHours(iso, site.hours, site.closures);
+  const first = dh.ranges[0];
+  const label = first ? `${fromMinutes(first.open).replace(/^0/, '')}–${fromMinutes(first.close % 1440).replace(/^0/, '')}` : 'зачинено';
+  return { weekday: d, label, today: highlightToday && d === new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())).getUTCDay() };
+});
+
+const visible = compact ? rows.filter((r) => r.today).concat(rows.filter((r) => !r.today).slice(0, 2)) : rows;
+---
+
+{
+  compact ? (
+    <ul class="hours-list hours-list--compact" role="list">
+      {visible.map((r) => (
+        <li class:list={[{ 'is-today': r.today }]}>
+          <span class="hours-day">{WEEKDAYS_UK[r.weekday]}</span>
+          <span class="hours-leader" aria-hidden="true" />
+          <span class="hours-time">{r.label}</span>
+          {r.today && <span class="sr-only">(сьогодні)</span>}
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <dl class="hours-list">
+      {rows.map((r) => (
+        <div class:list={['hours-row', { 'is-today': r.today }]}>
+          <dt class="hours-day">
+            {WEEKDAYS_UK[r.weekday]}
+            {r.today && <span class="sr-only"> (сьогодні)</span>}
+          </dt>
+          <span class="hours-leader" aria-hidden="true" />
+          <dd class="hours-time">{r.label}</dd>
+        </div>
+      ))}
+    </dl>
+  )
+}
+
+<style>
+  .hours-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    max-width: 34rem;
+  }
+  .hours-row,
+  .hours-list--compact li {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-2);
+    padding-block: 6px;
+  }
+  .hours-row + .hours-row,
+  .hours-list--compact li + li {
+    border-top: 1px dashed rgb(102 83 80 / 0.18);
+  }
+  .hours-day {
+    color: var(--text);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .hours-leader {
+    flex: 1 1 20px;
+    min-width: 20px;
+    border-bottom: var(--leader);
+    transform: translateY(-0.2em);
+  }
+  .hours-time {
+    margin: 0;
+    color: var(--text);
+    font-weight: 700;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .is-today .hours-day,
+  .is-today .hours-time {
+    color: var(--c-coral-deep);
+    font-weight: 700;
+  }
+  .is-today .hours-day::before {
+    content: '▸ ';
+    color: var(--c-coral-deep);
+  }
+  .hours-list--compact .hours-day {
+    min-width: 7.5em;
+  }
+</style>
