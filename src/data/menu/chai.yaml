@@ -1,0 +1,39 @@
+# Чай і напої
+category: chai
+title: Чай і напої
+hand: наше меню
+note: Чай, какао й холодні напої власного приготування.
+updatedAt: 2026-11-01
+items:
+  - slug: buckthorn-tea
+    name: Обліпиховий чай
+    price: 84
+    description: Свіжа обліпиха, апельсин, мед. 400 мл.
+    illo: buckthorn
+    tag: hit
+  - slug: teapot
+    name: Чай у чайнику
+    price: 70
+    description: Чорний, зелений або травʼяний, на двох.
+    illo: tea
+  - slug: cocoa-marshmallow
+    name: Какао з зефіром
+    price: 76
+    description: Бельгійський шоколад на молоці.
+    illo: cocoa
+  - slug: iced-latte
+    name: Айс-лате
+    price: 82
+    description: Холодне еспресо, лід і молоко.
+    illo: icedlatte
+  - slug: matcha-latte
+    name: Матча-лате
+    price: 98
+    description: Церемоніальна матча, 300 мл.
+    illo: matcha
+    tag: new
+  - slug: homemade-lemonade
+    name: Домашній лимонад
+    price: 68
+    description: Лимон, мʼята, тростинний цукор.
+    illo: lemonade

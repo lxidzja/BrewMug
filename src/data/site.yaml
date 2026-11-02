@@ -1,0 +1,63 @@
+# Дані кав'ярні. ЄДИНЕ джерело адреси, телефону й годин роботи (BR 001, BR 002).
+# Після зміни годин зачекайте збірку — сайт оновиться скрізь: шапка, головна, футер, контакти, бронювання.
+#
+# ⚠ ЗНАЧЕННЯ, ПОЗНАЧЕНІ placeholder: true — вигадані для макета.
+# Їх треба замінити на справжні. Production-збірка з ними НЕ пройде (npm run build).
+
+name: BrewMug
+tagline: Кава, десерти і тихе місце для роботи
+
+address:
+  placeholder: true
+  street: вул. Контрактова, 12
+  city: Київ
+  postalCode: "01000"
+  note: 3 хвилини від метро «Контрактова площа»
+
+phone: "+380441234567"
+phoneDisplay: "+380 44 123 45 67"
+contactPlaceholder: true
+email: hello@brewmug.ua
+
+timezone: Europe/Kyiv
+
+# Години роботи. days: 0 = неділя … 6 = субота. close може бути > 24:00 (закриття після півночі).
+hours:
+  - days: [1, 2, 3, 4]
+    open: "08:00"
+    close: "22:00"
+  - days: [5]
+    open: "08:00"
+    close: "23:00"
+  - days: [6]
+    open: "09:00"
+    close: "23:00"
+  - days: [0]
+    open: "09:00"
+    close: "21:00"
+
+# Винятки (свята, ремонт). Дата у форматі YYYY-MM-DD.
+closures: []
+
+# Налаштування бронювання (узгоджує власник).
+booking:
+  minLeadMinutes: 120 # за скільки хвилин до візиту приймаємо заявку
+  horizonDays: 30 # на скільки днів уперед
+  slotStepMinutes: 30 # крок між слотами часу
+  maxGuests: 10 # максимум гостей в одній заявці
+  capacityPerSlot: 24 # місткість залу, що ділиться між заявками
+  holdMinutes: 120 # скільки часу займає візит (для підрахунку зайнятості)
+
+privacy:
+  retentionDays: 90
+
+map:
+  lat: 50.4649
+  lng: 30.5197
+  label: вул. Контрактова, 12
+
+social:
+  - label: Instagram
+    href: https://www.instagram.com/
+  - label: Telegram
+    href: https://t.me/

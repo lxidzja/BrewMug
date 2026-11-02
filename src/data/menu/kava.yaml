@@ -1,0 +1,41 @@
+# Кава — BR 002: 15+ позицій у чотирьох категоріях.
+# price — ціле число у гривнях. tag: hit | new (необов'язково).
+# illo — назва ілюстрації з src/assets/illo (перевіряється збіркою).
+category: kava
+title: Кава
+hand: наше меню
+note: Зерно власної обсмажки, мелемо під кожне замовлення.
+updatedAt: 2026-11-01
+items:
+  - slug: espresso
+    name: Еспресо
+    price: 48
+    description: Подвійний шот, 40 мл. Густий і короткий.
+    illo: espresso
+  - slug: flat-white
+    name: Флет вайт
+    price: 78
+    description: Подвійне еспресо й шовковиста молочна пінка.
+    illo: flat
+    tag: hit
+  - slug: cappuccino
+    name: Капучино
+    price: 72
+    description: Класична пропорція 1:1:1, 300 мл.
+    illo: cappuccino
+  - slug: latte-oat
+    name: Лате на вівсяному
+    price: 86
+    description: Рослинне молоко без доплати.
+    illo: latte
+  - slug: filter-v60
+    name: Фільтр V60
+    price: 95
+    description: Ефіопія або Колумбія — спитайте бариста.
+    illo: filter
+    tag: new
+  - slug: lviv-coffee
+    name: Кава по-львівськи
+    price: 92
+    description: З цедрою апельсина і краплею меду.
+    illo: citrus

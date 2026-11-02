@@ -1,0 +1,34 @@
+# Снеки — категорія, якої вимагають BR (15+ позицій у чотирьох категоріях).
+# Позиції й ціни потребують підтвердження власника.
+category: sneky
+title: Снеки
+hand: наше меню
+note: Те, що можна зʼїсти однією рукою, поки гріється кава.
+updatedAt: 2026-11-01
+items:
+  - slug: sandwich
+    name: Сендвіч з ростбіфом
+    price: 85
+    description: Житній хліб, ростбіф, гірчиця, руккола.
+    illo: sandwich
+  - slug: cheese-toast
+    name: Тост з сиром
+    price: 74
+    description: Ґуда, чеддер із часником на грилі.
+    illo: toast
+  - slug: waffle
+    name: Вафля з сиром
+    price: 79
+    description: Бельгійська вафля, сирна начинка.
+    illo: waffle
+    tag: new
+  - slug: eggs-toast
+    name: Скрембл-тост
+    price: 89
+    description: Яйця-скрембл, зелена цибуля, тост.
+    illo: toast
+  - slug: granola-cup
+    name: Гранола з йогуртом
+    price: 72
+    description: Вівсяна гранола, грецький йогурт, мед.
+    illo: granola

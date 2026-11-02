@@ -1,0 +1,38 @@
+# Десерти
+category: deserty
+title: Десерти
+hand: наше меню
+note: Уся випічка — з нашої кухні, без напівфабрикатів.
+updatedAt: 2026-11-01
+items:
+  - slug: honeycake
+    name: Медівник
+    price: 115
+    description: Вісім шарів меду, сметанний крем.
+    illo: honeycake
+    tag: hit
+  - slug: cheesecake
+    name: Чізкейк
+    price: 98
+    description: Класичний, на пісочній основі, з ягодою.
+    illo: cheesecake
+  - slug: brownie
+    name: Брауні
+    price: 92
+    description: Темний шоколад 70%, волога середина.
+    illo: brownie
+  - slug: pear-tart
+    name: Тарт з грушею
+    price: 112
+    description: Пісочний тарт, груша, тимʼян.
+    illo: tart
+  - slug: almond-croissant
+    name: Круасан з мигдалем
+    price: 89
+    description: Листкове тісто, мигдальний крем.
+    illo: croissant
+  - slug: syrniki
+    name: Сирники
+    price: 105
+    description: Три штуки, зі сметаною й джемом.
+    illo: syrniki
