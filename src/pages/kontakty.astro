@@ -1,0 +1,339 @@
+---
+import Base from '../layouts/Base.astro';
+import TitleBand from '../components/TitleBand.astro';
+import Button from '../components/Button.astro';
+import HoursTable from '../components/HoursTable.astro';
+import MapCard from '../components/MapCard.astro';
+import OpenNow from '../components/OpenNow.astro';
+import { loadData } from '../../scripts/load-data.mjs';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { parse } from 'yaml';
+import type { SiteData } from '../lib/types';
+
+const loaded = loadData(process.cwd());
+const site = loaded.site as SiteData;
+const content = parse(readFileSync(join(process.cwd(), 'src/data/content/pages.yaml'), 'utf8')).contacts;
+const sent = Astro.url.searchParams.get('sent') === '1';
+const errParam = Astro.url.searchParams.get('err');
+const errors: Record<string, string> = errParam ? { message: errParam } : {};
+const stamp = Date.now();
+
+const hoursJson = JSON.stringify({ hours: site.hours, closures: site.closures, timezone: site.timezone });
+const mapsHref = `https://www.google.com/maps/dir/?api=1&destination=${site.map.lat},${site.map.lng}`;
+const osm = `https://www.openstreetmap.org/?mlat=${site.map.lat}&mlon=${site.map.lng}#map=17/${site.map.lat}/${site.map.lng}`;
+
+const contacts = [
+  { icon: 'pin', label: 'Адреса', value: `${site.address.street}, ${site.address.city}`, href: mapsHref },
+  { icon: 'phone', label: 'Телефон', value: site.phoneDisplay, href: `tel:${site.phone}` },
+  { icon: 'mail', label: 'Пошта', value: site.email, href: `mailto:${site.email}` },
+];
+
+const ICON_PATH: Record<string, string> = {
+  pin: 'M 12 21.4 C 12 21.4 4.6 14.1 4.6 9.6 C 4.6 5.513 7.913 2.2 12 2.2 C 16.087 2.2 19.4 5.513 19.4 9.6 C 19.4 14.1 12 21.4 12 21.4 Z M 14.5 9.6 C 14.5 10.981 13.381 12.1 12 12.1 C 10.619 12.1 9.5 10.981 9.5 9.6 C 9.5 8.219 10.619 7.1 12 7.1 C 13.381 7.1 14.5 8.219 14.5 9.6 Z',
+  phone: 'M 6.6 3.6 L 9.4 3.6 L 11 8 L 8.8 9.6 C 9.8 13.2 10.8 14.2 14.4 15.2 L 16 11 L 20.4 12.6 L 20.4 15.6 C 20.4 17.26 19.06 18.6 17.4 18.6 C 9.3 18.6 3.4 12.7 3.4 6.6 C 3.4 4.94 4.74 3.6 6.4 3.6 Z',
+  mail: 'M 2.9 5.4 L 21.1 5.4 L 21.1 18.6 L 2.9 18.6 Z M 2.9 5.9 L 12 13 L 21.1 5.9',
+};
+---
+
+<Base
+  title="Контакти"
+  description={`BrewMug: ${site.address.street}, ${site.address.city}. Телефон ${site.phoneDisplay}. Години роботи, карта й форма зворотного зв'язку.`}
+  current="contacts"
+>
+  <script id="hours-data" type="application/json" is:inline set:html={hoursJson} />
+
+  <TitleBand {site} hand="де нас знайти" title="Контакти" lead={content.lead} />
+
+  <section class="section contact-top">
+    <div class="container contact-top__grid">
+      <div>
+        <ul class="contact-list" role="list">
+          {
+            contacts.map((c) => (
+              <li class="contact-item">
+                <span class="contact-item__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="26" height="26">
+                    <path
+                      d={ICON_PATH[c.icon]}
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </span>
+                <div>
+                  <span class="label">{c.label}</span>
+                  <a class="contact-item__value" href={c.href}>{c.value}</a>
+                </div>
+              </li>
+            ))
+          }
+        </ul>
+
+        <p class="contact-note">{site.address.note}.</p>
+
+        <div class="contact-actions">
+          <Button href={mapsHref} variant="light">{content.routeLabel}</Button>
+          <Button href={osm} variant="ghost">Відкрити карту</Button>
+        </div>
+      </div>
+
+      <MapCard
+        lat={site.map.lat}
+        lng={site.map.lng}
+        label={site.map.label}
+        street={site.address.street}
+        city={site.address.city}
+        routeHref={mapsHref}
+        mapHref={osm}
+      />
+    </div>
+  </section>
+
+  <section class="section contact-lower" aria-labelledby="hours-title" data-contact-sent>
+    <div class="container contact-lower__grid">
+      <div id="hours">
+        <p class="hand">коли ми відчинені</p>
+        <h2 id="hours-title">Години роботи</h2>
+        <p class="hours-status"><OpenNow fallback="Години — нижче" /></p>
+        <HoursTable {site} />
+      </div>
+
+      <div class="contact-form-wrap" id="form">
+        <p class="sent" role="status" data-sent-notice hidden>
+          Дякуємо! Звернення надіслано — відповімо протягом дня.
+        </p>
+        <h2>{content.formTitle}</h2>
+        <p class="contact-form-lead">{content.formLead}</p>
+
+        <form class="contact-form" method="post" action="/api/contact" novalidate>
+          <input type="hidden" name="ts" value={stamp} />
+          <div class="hp" aria-hidden="true">
+            <label>Не заповнюйте <input type="text" name="company" tabindex="-1" autocomplete="off" /></label>
+          </div>
+
+          <div class="field">
+            <label for="c-name">Імʼя <span class="req" aria-hidden="true">*</span></label>
+            <input
+              id="c-name"
+              name="name"
+              type="text"
+              autocomplete="name"
+              required
+              minlength="2"
+              maxlength="60"
+              aria-invalid={errors.name ? 'true' : undefined}
+            />
+            {errors.name && <p class="error">{errors.name}</p>}
+          </div>
+
+          <div class="field">
+            <label for="c-phone">Телефон <span class="optional">(необовʼязково)</span></label>
+            <input id="c-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+380 __ ___ __ __" />
+          </div>
+
+          <div class="field">
+            <label for="c-message">Повідомлення <span class="req" aria-hidden="true">*</span></label>
+            <textarea
+              id="c-message"
+              name="message"
+              rows="5"
+              required
+              minlength="10"
+              maxlength="1000"
+              placeholder="Опишіть, чим можемо допомогти"
+              aria-invalid={errors.message ? 'true' : undefined}
+              aria-describedby={errors.message ? 'c-message-err' : 'c-message-hint'}
+            ></textarea>
+            {errors.message ? <p class="error" id="c-message-err">{errors.message}</p> : <p class="hint" id="c-message-hint">Мінімум 10 символів.</p>}
+          </div>
+
+          <Button type="submit" variant="primary" full>Надіслати</Button>
+          <p class="legal">
+            Ви погоджуєтесь на обробку імені, телефону й тексту звернення для відповіді. Зберігаємо не довше
+            90 днів. <a href="/konfidentsiinist/">Політика конфіденційності</a>.
+          </p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    import '../scripts/contact-sent.ts';
+  </script>
+</Base>
+
+<style>
+  .contact-top {
+    background: var(--c-paper);
+  }
+  .contact-top__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    gap: var(--sp-9);
+    align-items: start;
+  }
+  .contact-list {
+    display: grid;
+    gap: var(--sp-5);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .contact-item {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-4);
+  }
+  .contact-item__icon {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--c-peach-soft);
+    border: var(--border);
+    color: var(--c-ink);
+  }
+  .contact-item__value {
+    display: block;
+    font-family: var(--font-h3);
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--c-ink);
+    text-decoration: none;
+    min-height: 32px;
+  }
+  .contact-item__value:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+  .contact-note {
+    margin-top: var(--sp-5);
+    color: var(--text-muted);
+  }
+  .contact-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-3);
+    margin-top: var(--sp-5);
+  }
+  .map {
+    border: var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    aspect-ratio: 16 / 10;
+    background: var(--c-cream-2);
+  }
+  .map svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .contact-lower {
+    background: var(--c-cream);
+    border-top: var(--border);
+  }
+  .contact-lower__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    gap: var(--sp-9);
+    align-items: start;
+  }
+  .hours-status {
+    margin-block: var(--sp-3) var(--sp-5);
+  }
+  .sent {
+    margin-bottom: var(--sp-4);
+    padding: var(--sp-4);
+    border-radius: var(--radius-md);
+    background: #d9efee;
+    color: #0d4f50;
+    font-weight: 700;
+  }
+  .contact-form-lead {
+    margin-block: var(--sp-2) var(--sp-5);
+    color: var(--text-muted);
+  }
+  .contact-form {
+    display: grid;
+    gap: var(--sp-4);
+    padding: var(--sp-6);
+    background: var(--c-paper);
+    border: var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+  }
+  .field {
+    display: grid;
+    gap: var(--sp-2);
+  }
+  .field > label {
+    font-weight: 700;
+  }
+  .optional {
+    font-weight: 400;
+    color: var(--text-muted);
+    font-size: 0.9375rem;
+  }
+  .req {
+    color: var(--c-coral-deep);
+  }
+  input[type='text'],
+  input[type='tel'],
+  textarea {
+    width: 100%;
+    min-height: 52px;
+    padding: var(--sp-3) var(--sp-4);
+    font: inherit;
+    color: var(--c-ink);
+    background: var(--c-white);
+    border: var(--border);
+    border-radius: var(--radius-md);
+  }
+  textarea {
+    min-height: 120px;
+    resize: vertical;
+  }
+  input:focus-visible,
+  textarea:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+  }
+  input[aria-invalid='true'],
+  textarea[aria-invalid='true'] {
+    border-color: var(--c-coral-deep);
+  }
+  .hint {
+    font-size: 0.9375rem;
+    color: var(--text-muted);
+  }
+  .error {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--danger);
+  }
+  .hp {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+  .legal {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  @media (max-width: 64rem) {
+    .contact-top__grid,
+    .contact-lower__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

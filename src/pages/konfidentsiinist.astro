@@ -1,0 +1,88 @@
+---
+import Base from '../layouts/Base.astro';
+import TitleBand from '../components/TitleBand.astro';
+import { loadData } from '../../scripts/load-data.mjs';
+import type { SiteData } from '../lib/types';
+
+const loaded = loadData(process.cwd());
+const site = loaded.site as SiteData;
+const retention = 90;
+---
+
+<Base
+  title="Політика конфіденційності"
+  description="Які персональні дані збирає сайт кав'ярні BrewMug, навіщо, як довго зберігає й як їх видалити."
+  current=""
+  noindex
+>
+  <TitleBand {site} hand="документи" title="Політика конфіденційності" lead="Коротко, без юридичного туману." />
+
+  <section class="section policy">
+    <div class="container prose">
+      <h2>Які дані ми збираємо</h2>
+      <p>
+        Форма бронювання збирає імʼя, номер телефону, дату й час візиту, кількість гостей і, за бажанням,
+        текстові побажання. Форма зворотного звʼязку — імʼя, телефон (необовʼязково) і текст звернення.
+        Інших даних сайт не збирає: немає реєстрації, акаунтів, платежів і рекламних трекерів.
+      </p>
+
+      <h2>Навіщо</h2>
+      <p>Лише щоб обробити вашу заявку: підтвердити столик дзвінком або відповісти на звернення.</p>
+
+      <h2>Скільки зберігаємо</h2>
+      <p>
+        Не довше {retention} днів з моменту відправки. Після цього заявки й звернення видаляються
+        автоматично.
+      </p>
+
+      <h2>Кому передаємо</h2>
+      <p>
+        Нікому для реклами чи продажу. Повідомлення про нову заявку отримує адміністратор кав'ярні (через
+        месенджер або email) — там зазначені ваше імʼя й телефон, тобто зверніться до нас за видаленням в будь-який момент.
+        Хостинг сайту — постачальник інфраструктури, який обробляє дані від нашого імені.
+      </p>
+
+      <h2>Ваші права</h2>
+      <p>
+        Ви можете попросити показати, виправити або видалити свої дані. Напишіть на
+        <a href={`mailto:${site.email}`}>{site.email}</a> або зателефонуйте <a href={`tel:${site.phone}`}>{site.phoneDisplay}</a>.
+      </p>
+
+      <h2>Cookies</h2>
+      <p>
+        Сайт не встановлює рекламних cookie. Необхідні для роботи повідомлень дані браузер зберігає сам, і вони не
+        передаються нам.
+      </p>
+
+      <p class="policy__note">
+        Це чернетка документа. Юридичну відповідність має перевірити власник кав'ярні або юридичний
+        консультант.
+      </p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .policy {
+    background: var(--c-paper);
+  }
+  .policy h2 {
+    margin-top: var(--sp-7);
+    margin-bottom: var(--sp-3);
+    font-size: var(--fs-h3);
+  }
+  .policy h2:first-child {
+    margin-top: 0;
+  }
+  .policy p {
+    margin-bottom: var(--sp-3);
+  }
+  .policy__note {
+    margin-top: var(--sp-8);
+    padding: var(--sp-4);
+    border: 2px dashed var(--c-ink-soft);
+    border-radius: var(--radius-md);
+    font-size: var(--fs-small);
+    color: var(--text-muted);
+  }
+</style>

@@ -1,0 +1,260 @@
+---
+import Base from '../layouts/Base.astro';
+import TitleBand from '../components/TitleBand.astro';
+import Button from '../components/Button.astro';
+import Tile from '../components/Tile.astro';
+import { loadData } from '../../scripts/load-data.mjs';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { parse } from 'yaml';
+import type { SiteData } from '../lib/types';
+
+const loaded = loadData(process.cwd());
+const site = loaded.site as SiteData;
+const content = parse(readFileSync(join(process.cwd(), 'src/data/content/pages.yaml'), 'utf8')).about;
+const illoUrl = (key: string) => '/illo/' + key + '.svg';
+
+// у production не показуємо непідтверджені цифри (див. lang3: чесність контенту)
+const showStats = !content.stats.every((s: { placeholder?: boolean }) => s.placeholder);
+---
+
+<Base
+  title="Про нас"
+  description="BrewMug — кавʼярня на Подолі: власна обсмажка, свіжа випічка й зал, де можна працювати. Про кухню, зерно й команду."
+  current="about"
+>
+  <TitleBand {site} hand="про нас" title={content.title} lead={content.lead} />
+
+  <section class="section story">
+    <div class="container story__grid">
+      <ol class="story__facts" role="list">
+        {
+          content.facts.map((f: { num: string; title: string; text: string }) => (
+            <li class="story__fact">
+              <span class="story__num" aria-hidden="true">
+                {f.num}
+              </span>
+              <div>
+                <h2 class="story__title">{f.title}</h2>
+                <p>{f.text}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+
+      <div class="story__art" aria-hidden="true">
+        <div class="story__sun"></div>
+        <img class="story__cup" src={illoUrl('flat')} width="300" height="300" alt="" loading="lazy" />
+        <span class="story__note">з любовʼю,<br />з Подолу</span>
+      </div>
+    </div>
+  </section>
+
+  {
+    showStats && (
+      <section class="stats" aria-label="Кавʼярня в цифрах">
+        <div class="container stats__inner">
+          {content.stats.map((s: { value: string; label: string }) => (
+            <div class="stat">
+              <span class="stat__value">{s.value}</span>
+              <span class="stat__label">{s.label}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <section class="section team">
+    <div class="container">
+      <p class="hand">хто вас зустрічає</p>
+      <h2>Команда</h2>
+      <ul class="team__list" role="list">
+        {
+          content.team.map((p: { name: string; role: string; text: string; illo: string }) => (
+            <li class="team__item">
+              <Tile src={illoUrl(p.illo)} size={140} bg="soft" />
+              <h3>{p.name}</h3>
+              <p class="team__role">{p.role}</p>
+              <p>{p.text}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="cta-band">
+    <div class="container cta-band__inner">
+      <div>
+        <p class="hand cta-band__kicker">без реєстрації</p>
+        <h2>Приходьте знайомитись</h2>
+        <p>Просто виберіть час — столик підготуємо. Або зазирніть на каву без бронювання.</p>
+      </div>
+      <div class="cta-band__actions">
+        <Button href="/broniuvannia/">Забронювати столик</Button>
+        <Button href="/menu/kava/" variant="ghost">Меню</Button>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .story {
+    background: var(--c-paper);
+  }
+  .story__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    gap: var(--sp-10);
+    align-items: center;
+  }
+  .story__facts {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: var(--sp-7);
+  }
+  .story__fact {
+    display: flex;
+    gap: var(--sp-4);
+  }
+  .story__num {
+    font-family: var(--font-hand);
+    font-weight: 700;
+    font-size: var(--fs-num);
+    line-height: 0.9;
+    color: var(--c-coral-deep);
+  }
+  .story__title {
+    font-size: var(--fs-h3);
+    margin-bottom: var(--sp-2);
+  }
+  .story__fact p {
+    color: var(--text-muted);
+    max-width: 44ch;
+  }
+  .story__art {
+    position: relative;
+    aspect-ratio: 1;
+    max-width: 460px;
+    width: 100%;
+    justify-self: center;
+  }
+  .story__sun {
+    position: absolute;
+    inset: 8%;
+    border-radius: 50%;
+    background: var(--c-peach-soft);
+    border: 2.5px solid var(--c-ink);
+  }
+  .story__cup {
+    position: absolute;
+    inset: 14%;
+    width: 72%;
+    height: 72%;
+  }
+  .story__note {
+    position: absolute;
+    left: 2%;
+    top: 4%;
+    font-family: var(--font-hand);
+    font-weight: 700;
+    font-size: 1.9rem;
+    line-height: 1;
+    color: var(--c-coral-deep);
+    transform: rotate(-6deg);
+  }
+
+  .stats {
+    background: var(--c-teal);
+    color: var(--c-white);
+    border-block: var(--border);
+  }
+  .stats__inner {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: var(--sp-5);
+    padding-block: var(--sp-8);
+  }
+  .stat__value {
+    display: block;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: var(--fs-stat);
+    line-height: var(--lh-stat);
+  }
+  .stat__label {
+    display: block;
+    margin-top: var(--sp-1);
+    font-size: var(--fs-small);
+    color: var(--c-cream);
+  }
+
+  .team {
+    background: var(--c-cream);
+    border-top: var(--border);
+  }
+  .team__list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--sp-8);
+    margin: var(--sp-7) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .team__item h3 {
+    margin-top: var(--sp-4);
+    margin-bottom: 2px;
+  }
+  .team__role {
+    font-family: var(--font-hand);
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--c-coral-deep);
+    margin-bottom: var(--sp-2);
+  }
+  .team__item p:last-child {
+    color: var(--text-muted);
+    font-size: var(--fs-small);
+  }
+
+  .cta-band {
+    background: var(--c-peach);
+    border-top: var(--border);
+  }
+  .cta-band__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-6);
+    padding-block: var(--sp-9);
+  }
+  .cta-band__kicker {
+    color: var(--c-ink);
+  }
+  .cta-band h2 {
+    margin-block: var(--sp-1) var(--sp-3);
+  }
+  .cta-band p {
+    max-width: 46ch;
+  }
+  .cta-band__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-3);
+  }
+
+  @media (max-width: 64rem) {
+    .story__grid,
+    .team__list {
+      grid-template-columns: 1fr;
+    }
+    .story__art {
+      max-width: 320px;
+    }
+  }
+</style>

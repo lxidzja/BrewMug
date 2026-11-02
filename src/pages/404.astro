@@ -1,0 +1,40 @@
+---
+import Base from '../layouts/Base.astro';
+import Button from '../components/Button.astro';
+---
+
+<Base title="Сторінку не знайдено" description="Такої сторінки на сайті немає." noindex>
+  <section class="section notfound">
+    <div class="container">
+      <p class="hand">ой</p>
+      <h1>Сторінку не знайдено</h1>
+      <p class="notfound__lead">
+        Можливо, посилання застаріле. Ось звідси можна продовжити: меню, контакти або бронювання столика.
+      </p>
+      <div class="notfound__actions">
+        <Button href="/">На головну</Button>
+        <Button href="/menu/kava/" variant="light">Меню</Button>
+        <Button href="/kontakty/" variant="ghost">Контакти</Button>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .notfound {
+    background: var(--c-cream);
+    min-height: 60vh;
+  }
+  .notfound__lead {
+    margin-block: var(--sp-4);
+    max-width: 50ch;
+    font-size: var(--fs-lead);
+    color: var(--text-muted);
+  }
+  .notfound__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-3);
+    margin-top: var(--sp-5);
+  }
+</style>

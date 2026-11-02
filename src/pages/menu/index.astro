@@ -1,0 +1,38 @@
+---
+// /menu/ — редірект на першу категорію, з працездатними посиланнями без JS
+import Base from '../../layouts/Base.astro';
+import TitleBand from '../../components/TitleBand.astro';
+import { loadData } from '../../../scripts/load-data.mjs';
+import type { MenuCategory, SiteData } from '../../lib/types';
+
+const loaded = loadData(process.cwd());
+const site = loaded.site as SiteData;
+const menu = loaded.menu as MenuCategory[];
+const first = menu[0]!;
+---
+
+<Base title="Меню" description="Меню кав'ярні BrewMug: кава, чай і напої, десерти, снеки." current="menu" noindex refreshTo={`/menu/${first.category}/`}>
+  <TitleBand {site} hand="наше меню" title="Меню і ціни" lead="Оберіть категорію." />
+  <section class="section">
+    <div class="container">
+      <ul class="cat-list" role="list">
+        {
+          menu.map((c) => (
+            <li>
+              <a href={`/menu/${c.category}/`}>{c.title}</a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .cat-list a {
+    display: inline-block;
+    padding: var(--sp-3) 0;
+    min-height: 44px;
+    font-size: 1.25rem;
+  }
+</style>

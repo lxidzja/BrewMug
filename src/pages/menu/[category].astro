@@ -1,0 +1,160 @@
+---
+import Base from '../../layouts/Base.astro';
+import TitleBand from '../../components/TitleBand.astro';
+import MenuTabs from '../../components/MenuTabs.astro';
+import MenuItem from '../../components/MenuItem.astro';
+import Button from '../../components/Button.astro';
+import { loadData } from '../../../scripts/load-data.mjs';
+import type { MenuCategory, SiteData } from '../../lib/types';
+
+export async function getStaticPaths() {
+  const { menu } = loadData(process.cwd());
+  return (menu as MenuCategory[]).map((c) => ({
+    params: { category: c.category },
+    props: { category: c.category },
+  }));
+}
+
+const { category } = Astro.props;
+const loaded = loadData(process.cwd());
+const site = loaded.site as SiteData;
+const menu = loaded.menu as MenuCategory[];
+const cat = menu.find((c) => c.category === category)!;
+const illoUrl = (key: string) => '/illo/' + key + '.svg';
+
+const updated = new Intl.DateTimeFormat('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' }).format(
+  cat.updatedAt,
+);
+
+// дві колонки на десктопі: перша половина / друга половина
+const half = Math.ceil(cat.items.length / 2);
+const cols = [cat.items.slice(0, half), cat.items.slice(half)];
+
+// наступна категорія для кнопки «Інша категорія» (по колу)
+const idx = menu.findIndex((c) => c.category === cat.category);
+const nextCat = menu[(idx + 1) % menu.length]!;
+---
+
+<Base
+  title={`${cat.title} — меню кав'ярні`}
+  description={`${cat.title} у BrewMug: ціни, склад і фото. ${cat.note} Меню оновлено ${updated}.`}
+  current="menu"
+>
+  <TitleBand {site} hand={cat.hand} title="Меню і ціни" lead="Оновлюємо меню щотижня. Немає потрібної позиції — спитайте бариста, можливо, вона вже на кухні." />
+
+  <section class="section menu-page">
+    <div class="container">
+      <MenuTabs categories={menu} active={cat.category} />
+
+      <div class="menu-head">
+        <h2>{cat.title}</h2>
+        <p class="menu-head__note">{cat.note}</p>
+        <p class="menu-head__updated">Меню оновлено {updated}</p>
+      </div>
+
+      <div class="menu-grid">
+        {
+          cols.map((items) => (
+            <div class="menu-col">
+              {items.map((it) => (
+                <MenuItem item={it} illo={illoUrl(it.illo)} />
+              ))}
+            </div>
+          ))
+        }
+      </div>
+
+      <p class="menu-foot">
+        Усі ціни в гривнях. Склад і алергени — запитайте бариста. Свій стаканчик — мінус 10 грн.
+      </p>
+    </div>
+  </section>
+
+  <section class="cta-band">
+    <div class="container cta-band__inner">
+      <div>
+        <p class="hand cta-band__kicker">прийдете — місце знайдемо</p>
+        <h2>Але краще забронюйте</h2>
+        <p>Якщо йдете компанією, залиште заявку — підготуємо столик. Підтвердимо дзвінком.</p>
+      </div>
+      <div class="cta-band__actions">
+        <Button href="/broniuvannia/">Забронювати столик</Button>
+        <Button href={`/menu/${nextCat.category}/`} variant="ghost"
+          >Інша категорія</Button
+        >
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .menu-page {
+    background: var(--c-paper);
+  }
+  .menu-head {
+    margin-bottom: var(--sp-7);
+  }
+  .menu-head h2 {
+    margin-bottom: var(--sp-2);
+  }
+  .menu-head__note {
+    color: var(--text-muted);
+    max-width: 60ch;
+  }
+  .menu-head__updated {
+    margin-top: var(--sp-2);
+    font-size: var(--fs-label);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .menu-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--sp-9) var(--sp-10);
+  }
+  .menu-col {
+    display: grid;
+    gap: var(--sp-6);
+    align-content: start;
+  }
+  .menu-foot {
+    margin-top: var(--sp-9);
+    padding-top: var(--sp-5);
+    border-top: var(--border);
+    font-size: var(--fs-small);
+    color: var(--text-muted);
+  }
+  .cta-band {
+    background: var(--c-peach);
+    border-top: var(--border);
+  }
+  .cta-band__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-6);
+    padding-block: var(--sp-9);
+  }
+  .cta-band__kicker {
+    color: var(--c-ink);
+  }
+  .cta-band h2 {
+    margin-block: var(--sp-1) var(--sp-3);
+  }
+  .cta-band p {
+    max-width: 46ch;
+  }
+  .cta-band__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-3);
+  }
+  @media (max-width: 64rem) {
+    .menu-grid {
+      grid-template-columns: 1fr;
+      gap: var(--sp-6);
+    }
+  }
+</style>
